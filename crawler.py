@@ -1,16 +1,19 @@
+import re
+
 from bs4 import BeautifulSoup
 from urllib import request
 
-url = "https://www.imdb.com/chart/top/?ref_=nv_mv_250"
+movies_url = "https://www.imdb.com/chart/top/?ref_=nv_mv_250"
+shows_url = "https://www.imdb.com/chart/toptv"
 
 
-def get_movies(url_string: str):
+def get_ratings(url_string: str):
     req = request.urlopen(url_string).read()
 
     soup = BeautifulSoup(req, 'html.parser')
 
-    movies = []
-    table = soup.find(attrs={"data-caller-name": "chart-top250movie"})
+    results = []
+    table = soup.find(attrs={"data-caller-name": re.compile("^chart-*")})
     entries = table.find_all('tr')
     for entry in entries:
         title_col = entry.find(class_='titleColumn')
@@ -18,10 +21,11 @@ def get_movies(url_string: str):
         if title_col and rating_col:
             title = title_col.a.get_text()
             rating = rating_col.strong.get_text()
-            movie = {"title": title, "rating": rating}
-            movies.append(movie)
+            item = {"title": title, "rating": rating}
+            results.append(item)
 
-    print(movies)
+    print(results)
 
 
-get_movies(url)
+get_ratings(movies_url)
+get_ratings(shows_url)
